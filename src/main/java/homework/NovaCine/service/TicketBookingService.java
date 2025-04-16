@@ -25,18 +25,18 @@ public class TicketBookingService {
 
     @Transactional
     public TicketBooking bookTicket(TicketBooking ticketBooking) {
-        var screening = screeningRepository.findById(ticketBooking.getScreening().getId())
-                .orElseThrow(() -> new EntityNotFoundException("Screening does not exist by id:" + ticketBooking.getScreening().getId()));
-        validateSeatAvailability(screening.getAvailableSeats(), ticketBooking.getSeatCount());
-        ticketBooking.setScreening(screening).setBookingTime(LocalDateTime.now());
-        var savedBooking = ticketBookingRepository.save(ticketBooking);
-        publisher.publishTicketBookingEvent(new TicketBookedEvent(this, savedBooking));
-        return savedBooking;
+//        var screening = screeningRepository.findById(ticketBooking.getScreening().getId())
+//                .orElseThrow(() -> new EntityNotFoundException("Screening does not exist by id:" + ticketBooking.getScreening().getId()));
+//        validateSeatAvailability(screening.getAvailableSeats(), ticketBooking.getSeatCount());
+//        ticketBooking.setScreening(screening).setBookingTime(LocalDateTime.now());
+//        var savedBooking = ticketBookingRepository.save(ticketBooking);
+        publisher.publishTicketBookingEvent(new TicketBookedEvent(this, ticketBooking));
+        return ticketBooking;
     }
 
-    private void validateSeatAvailability(Integer availableSeats, Integer bookedSeats) {
-        if (availableSeats < bookedSeats) {
-            throw new InsufficientSeatsException(bookedSeats, availableSeats);
-        }
-    }
+//    private void validateSeatAvailability(Integer availableSeats, Integer bookedSeats) {
+//        if (availableSeats < bookedSeats) {
+//            throw new InsufficientSeatsException(bookedSeats, availableSeats);
+//        }
+//    }
 }

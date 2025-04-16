@@ -1,5 +1,7 @@
 package homework.NovaCine.controller;
 
+import homework.NovaCine.event.EventPublisher;
+import homework.NovaCine.event.TicketBookedEvent;
 import homework.NovaCine.model.TicketBooking;
 import homework.NovaCine.service.TicketBookingService;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class TicketBookingController {
 
     private final TicketBookingService ticketBookingService;
+    private final EventPublisher publisher;
 
     @PostMapping
-    public ResponseEntity<TicketBooking> bookTicket(@RequestBody TicketBooking tickedBooking) {
+    public ResponseEntity<String> bookTicket(@RequestBody TicketBooking ticketBooking) {
         log.info("POST /tickets | Received request to book tickets");
-        return ResponseEntity.ok(ticketBookingService.bookTicket(tickedBooking));
+        publisher.publishTicketBookingEvent(new TicketBookedEvent(this, ticketBooking));
+        return ResponseEntity.ok("your ticket was booked");
     }
 }
