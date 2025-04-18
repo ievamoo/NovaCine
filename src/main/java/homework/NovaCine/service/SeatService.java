@@ -1,15 +1,19 @@
 package homework.NovaCine.service;
 
 import homework.NovaCine.event.TicketBookedEvent;
+import homework.NovaCine.exception.BookingNotPossibleException;
 import homework.NovaCine.exception.InsufficientSeatsException;
 import homework.NovaCine.model.Screening;
+import homework.NovaCine.model.TicketBooking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Service
 @RequiredArgsConstructor
@@ -22,21 +26,43 @@ public class SeatService {
 
     @EventListener
     @Order(1)
-    public void validateAndAllocateSeats(TicketBookedEvent event) {
+    public void handleTicketBooking(TicketBookedEvent event) {
         var booking = event.getTicketBooking();
         var screening = screeningService.getScreeningById(booking.getScreening().getId());
-        updateAvailableSeats(screening, booking.getSeatCount());
-        booking.setScreening(screening).setBookingTime(LocalDateTime.now());
-        ticketBookingService.saveTicket(booking);
+
+        validateBookingTime(screening.getStartTime());
+        validateSeatAvailability(screening, booking.getSeatCount());
+
+        updateSeats(screening, booking.getSeatCount());
+        finalizeBooking(booking, screening);
+
         cacheService.evictFromCache(screening.getId());
     }
 
-    private void updateAvailableSeats(Screening screening, Integer bookedSeats) {
-        var availableSeats = screening.getAvailableSeats();
+    private void validateBookingTime(LocalTime startTime) {
+        var now = LocalTime.now();
+        var duration = Duration.between(now, startTime);
+        if (startTime.isBefore(now) || duration.toMinutes() < 120) {
+            throw new BookingNotPossibleException();
+        }
+    }
+
+    private void validateSeatAvailability(Screening screening, int bookedSeats) {
+        int availableSeats = screening.getAvailableSeats();
         if (availableSeats < bookedSeats) {
             throw new InsufficientSeatsException(bookedSeats, availableSeats);
         }
-        screening.setAvailableSeats(availableSeats-bookedSeats);
-        log.info("[SeatService]: Available seats reduced from {} to {} ", availableSeats, screening.getAvailableSeats());
+    }
+
+    private void updateSeats(Screening screening, Integer bookedSeats) {
+        int availableSeats = screening.getAvailableSeats();
+        screening.setAvailableSeats(availableSeats - bookedSeats);
+        log.info("[SeatService] Reduced available seats from {} to {}", availableSeats, screening.getAvailableSeats());
+    }
+
+    private void finalizeBooking(TicketBooking booking, Screening screening) {
+        booking.setScreening(screening)
+                .setBookingTime(LocalDateTime.now());
+        ticketBookingService.saveTicket(booking);
     }
 }

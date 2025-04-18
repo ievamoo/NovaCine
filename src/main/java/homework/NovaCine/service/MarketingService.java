@@ -3,12 +3,10 @@ package homework.NovaCine.service;
 import homework.NovaCine.event.TicketBookedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@Async
 public class MarketingService {
 
     @EventListener

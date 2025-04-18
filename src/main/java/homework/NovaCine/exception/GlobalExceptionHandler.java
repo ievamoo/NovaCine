@@ -13,7 +13,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             EntityNotFoundException.class,
-            InsufficientSeatsException.class
+            InsufficientSeatsException.class,
+            BookingNotPossibleException.class
     })
     public ResponseEntity<?> handleException(RuntimeException exception) {
         log.warn("[Exception]: {}", exception.getMessage());
@@ -23,7 +24,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<?> generateResponse(RuntimeException exception) {
         if (exception instanceof EntityNotFoundException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-        } else if (exception instanceof InsufficientSeatsException) {
+        } else if (exception instanceof InsufficientSeatsException || exception instanceof BookingNotPossibleException) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
