@@ -27,7 +27,17 @@ public class CacheService {
 
     public Screening getFromCache(Long id) {
         var cache = cacheManager.getCache(cacheName);
-        return cache != null ? cache.get(id, Screening.class) : null;
+        if (cache == null) {
+            log.info("[CacheService] Cache not found");
+            return null;
+        }
+        var screening = cache.get(id, Screening.class);
+        if (screening == null) {
+            log.info("[CacheService] Cache miss for screening id {}", id);
+            return null;
+        }
+        log.info("[CacheService] Cache hit for screening id {}", id);
+        return cache.get(id, Screening.class);
     }
 
     public void putInCache(Long id, Screening screening) {

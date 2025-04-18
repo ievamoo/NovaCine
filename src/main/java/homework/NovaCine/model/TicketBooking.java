@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -31,5 +32,8 @@ public class TicketBooking {
     private Integer seatCount;
 
     private LocalDateTime bookingTime;
+
+    @Column(nullable = false, updatable = false, unique = true)
+    private UUID uuid;
 
 }

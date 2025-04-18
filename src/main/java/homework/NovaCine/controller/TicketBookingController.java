@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/tickets")
 @RequiredArgsConstructor
@@ -20,12 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class TicketBookingController {
 
     private final EventPublisher publisher;
+    private final TicketBookingService ticketBookingService;
 
     @PostMapping
-    public ResponseEntity<String> bookTicket(@RequestBody TicketBooking ticketBooking) {
+    public ResponseEntity<TicketBooking> bookTicket(@RequestBody TicketBooking ticketBooking) {
         log.info("POST /tickets | Received request to book tickets");
+        ticketBooking.setUuid(UUID.randomUUID());
+        log.info("UUID generated for the ticket {}", ticketBooking.getUuid());
         publisher.publishTicketBookingEvent(new TicketBookedEvent(this, ticketBooking));
-        return ResponseEntity.status(HttpStatus.CREATED).body("Your ticket was successfully booked.");
-
+        return ResponseEntity.status(HttpStatus.CREATED).body(ticketBookingService.getTicketByUuid(ticketBooking.getUuid()));
     }
 }

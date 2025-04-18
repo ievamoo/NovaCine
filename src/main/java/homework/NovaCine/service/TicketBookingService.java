@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,4 +22,7 @@ public class TicketBookingService {
           log.info("Booking saved to DB for viewer {} ", ticketBooking.getViewerName());
     }
 
+    public TicketBooking getTicketByUuid(UUID uuid) {
+        return ticketBookingRepository.findByUuid(uuid);
+    }
 }

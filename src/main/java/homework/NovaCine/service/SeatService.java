@@ -24,7 +24,7 @@ public class SeatService {
     @Order(1)
     public void validateAndAllocateSeats(TicketBookedEvent event) {
         var booking = event.getTicketBooking();
-        var screening = screeningService.fetchScreeningFromDb(booking.getScreening().getId());
+        var screening = screeningService.getScreeningById(booking.getScreening().getId());
         updateAvailableSeats(screening, booking.getSeatCount());
         booking.setScreening(screening).setBookingTime(LocalDateTime.now());
         ticketBookingService.saveTicket(booking);

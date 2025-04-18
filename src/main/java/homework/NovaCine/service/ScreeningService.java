@@ -1,7 +1,6 @@
 package homework.NovaCine.service;
 
 import homework.NovaCine.model.Screening;
-import homework.NovaCine.repository.CinemaRepository;
 import homework.NovaCine.repository.ScreeningRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -29,23 +28,15 @@ public class ScreeningService {
     }
 
     public Screening getScreeningById(Long id) {
-        log.info("[ScreeningService] Searching for screening with id {}...", id);
         var cachedScreening = cacheService.getFromCache(id);
-
-        if (cachedScreening != null) {
-            log.info("[ScreeningService] Cache hit for screening id {}", id);
-            return cachedScreening;
-        }
-
-        log.info("[ScreeningService] Cache missed, retrieving screening from DB by id {}", id);
-        var screeningFromDb =  fetchScreeningFromDb(id);
-        cacheService.putInCache(id, screeningFromDb);
-
-        return screeningFromDb;
+        return cachedScreening != null ? cachedScreening : fetchScreeningFromDb(id);
     }
 
-    public Screening fetchScreeningFromDb(Long id) {
-        return screeningRepository.findById(id)
+    private Screening fetchScreeningFromDb(Long id) {
+        var screening =screeningRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found by id: " + id));
+        log.info("[ScreeningService]: fetched screening from DB" );
+        cacheService.putInCache(id, screening);
+        return screening;
     }
 }
